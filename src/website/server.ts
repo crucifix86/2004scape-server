@@ -1622,10 +1622,10 @@ export function createWebsiteServer() {
         const https = require('https');
         
         // Store console output for SSE
-        global.updateConsoleOutput = [];
+        const updateConsoleOutput = [];
         const logToConsole = (msg) => {
             console.log('[UPDATE]', msg);
-            global.updateConsoleOutput.push(`[${new Date().toISOString()}] ${msg}`);
+            updateConsoleOutput.push(`[${new Date().toISOString()}] ${msg}`);
         };
         
         try {
@@ -1834,14 +1834,14 @@ export function createWebsiteServer() {
             }
             
             // Send success response before server might restart
-            res.json({ success: true, message: 'Update applied successfully. Server will restart automatically.', console: global.updateConsoleOutput });
+            res.json({ success: true, message: 'Update applied successfully. Server will restart automatically.', console: updateConsoleOutput });
             
             // If using tsx watch, the server will auto-restart when files change
             // Otherwise, we could trigger a restart here
         } catch (err) {
             logToConsole(`Update failed: ${err.message}`);
             console.error('Update failed:', err);
-            res.status(500).json({ error: 'Update failed: ' + err.message, console: global.updateConsoleOutput });
+            res.status(500).json({ error: 'Update failed: ' + err.message, console: updateConsoleOutput });
         }
     });
     
