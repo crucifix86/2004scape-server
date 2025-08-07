@@ -122,12 +122,22 @@ echo "Updating version to 2.3.4..."
 sed -i 's/"version": ".*"/"version": "2.3.4"/' package.json
 
 echo ""
+echo "Pulling latest changes from GitHub..."
+git pull origin main || echo "Note: Could not pull from git (may not be a git repository)"
+
+echo ""
+echo "Building the project..."
+npm run build || echo "Note: Build failed, you may need to run 'npm install' first"
+
+echo ""
 echo "=== Fixes Applied Successfully! ==="
 echo ""
 echo "The following fixes have been applied:"
 echo "1. Update system now checks the correct repository"
 echo "2. Backup paths are now dynamic (work in /opt)"
 echo "3. Restart functionality fixed"
+echo "4. Update download process fixed"
+echo "5. Version updated to 2.3.4"
 echo ""
 echo "Please restart the server for changes to take effect:"
 echo "cd /opt/2004scape-server && ./server restart"
