@@ -45,7 +45,8 @@ apt-get install -y \
     apache2 \
     sqlite3 \
     python3 \
-    screen
+    screen \
+    openjdk-17-jre-headless
 
 # Install Node.js 20
 curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
