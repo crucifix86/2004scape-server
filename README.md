@@ -21,6 +21,25 @@ Once your setup process has completed, wait for it to tell you the world has sta
 
 The server includes its own web client, so you don't have to download a client!
 
+## VPS Installation
+
+For quick installation on a fresh VPS (Ubuntu/Debian), use our automated installer:
+
+```bash
+wget https://raw.githubusercontent.com/crucifix86/2004scape-server/main/install-vps.sh
+chmod +x install-vps.sh
+sudo ./install-vps.sh
+```
+
+This installer will:
+- Install all required dependencies (Node.js, Java, Apache, etc.)
+- Set up the game and login servers
+- Configure Apache as a reverse proxy
+- Create a developer account with your chosen credentials
+- Start both servers automatically
+
+After installation, access your server at `http://YOUR_VPS_IP`
+
 ## Dependencies
 
 - [NodeJS 22](https://nodejs.org/)
