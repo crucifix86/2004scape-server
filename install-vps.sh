@@ -76,7 +76,7 @@ cp db_clean.sqlite db.sqlite
 
 # Create a temporary CommonJS script to hash the password
 cat > hash_password.cjs << EOF
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const password = process.argv[2];
 const hash = bcrypt.hashSync(password, 10);
 console.log(hash);
