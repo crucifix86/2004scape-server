@@ -74,8 +74,8 @@ echo "=== Setting Up Database ==="
 # Copy clean database
 cp db_clean.sqlite db.sqlite
 
-# Create a temporary script to hash the password after dependencies are installed
-cat > hash_password.js << EOF
+# Create a temporary CommonJS script to hash the password
+cat > hash_password.cjs << EOF
 const bcrypt = require('bcryptjs');
 const password = process.argv[2];
 const hash = bcrypt.hashSync(password, 10);
@@ -83,10 +83,10 @@ console.log(hash);
 EOF
 
 # Hash the password using the temporary script
-DEV_PASSWORD_HASH=$(node hash_password.js "$DEV_PASSWORD")
+DEV_PASSWORD_HASH=$(node hash_password.cjs "$DEV_PASSWORD")
 
 # Clean up temporary script
-rm hash_password.js
+rm hash_password.cjs
 
 # Insert developer account
 sqlite3 db.sqlite "INSERT INTO account (username, password, staffmodlevel) VALUES ('$DEV_USERNAME', '$DEV_PASSWORD_HASH', 3);"
