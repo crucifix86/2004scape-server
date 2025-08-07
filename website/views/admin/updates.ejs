@@ -436,16 +436,23 @@
                     })
                 });
                 
-                const data = await response.json();
+                let data;
+                try {
+                    data = await response.json();
+                } catch (e) {
+                    data = { error: 'Failed to parse response' };
+                }
                 
                 if (!response.ok) {
-                    if (data.console) {
+                    if (data && data.console) {
                         updateConsole.innerHTML = data.console.join('\n');
+                    } else {
+                        updateConsole.innerHTML = 'Update failed but no console output available\n';
                     }
                     throw new Error(data.error || 'Update failed');
                 }
                 
-                if (data.console) {
+                if (data && data.console) {
                     updateConsole.innerHTML = data.console.join('\n');
                 }
                 
