@@ -1963,9 +1963,12 @@ export function createWebsiteServer() {
             // Use spawn with detached option to survive parent process termination
             setTimeout(() => {
                 const { spawn } = require('child_process');
-                const restart = spawn('./server', ['restart'], {
+                const path = require('path');
+                const serverScript = path.join(__dirname, '..', '..', 'server');
+                const restart = spawn(serverScript, ['restart'], {
                     detached: true,
-                    stdio: 'ignore'
+                    stdio: 'ignore',
+                    cwd: path.join(__dirname, '..', '..')
                 });
                 restart.unref(); // Allow parent to exit independently
             }, 100);
