@@ -1971,11 +1971,16 @@ export function createWebsiteServer() {
             setTimeout(() => {
                 const { spawn } = require('child_process');
                 const path = require('path');
-                const serverScript = path.join(__dirname, '..', '..', 'server');
-                const restart = spawn(serverScript, ['restart'], {
+                // Use process.cwd() which will be the project root
+                const serverScript = path.join(process.cwd(), 'server');
+                console.log('Restarting server with script:', serverScript);
+                
+                // Use bash explicitly to ensure the script runs properly
+                const restart = spawn('/bin/bash', [serverScript, 'restart'], {
                     detached: true,
                     stdio: 'ignore',
-                    cwd: path.join(__dirname, '..', '..')
+                    cwd: process.cwd(),
+                    env: process.env
                 });
                 restart.unref(); // Allow parent to exit independently
             }, 100);
