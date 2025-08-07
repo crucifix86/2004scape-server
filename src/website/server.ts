@@ -1621,13 +1621,23 @@ export function createWebsiteServer() {
         const execPromise = util.promisify(exec);
         const https = require('https');
         
+        // Store console output for SSE
+        global.updateConsoleOutput = [];
+        const logToConsole = (msg) => {
+            console.log('[UPDATE]', msg);
+            global.updateConsoleOutput.push(`[${new Date().toISOString()}] ${msg}`);
+        };
+        
         try {
             const { version } = req.body;
+            
+            logToConsole(`Starting update to version ${version}`);
             
             // Create backup first if enabled
             const autoBackup = db.prepare('SELECT value FROM settings WHERE key = ?').get('update_auto_backup')?.value !== 'false';
             
             if (autoBackup) {
+                logToConsole('Creating backup...');
                 const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
                 const backupName = `pre-update-backup-${timestamp}.tar.gz`;
                 const projectDir = process.cwd();
@@ -1635,6 +1645,7 @@ export function createWebsiteServer() {
                 const projectName = path.basename(projectDir);
                 
                 await execPromise(`cd ${parentDir} && tar --exclude='node_modules' --exclude='.git' --exclude='*.log' --exclude='*.pid' -czf ${backupName} ${projectName}`);
+                logToConsole(`Backup created: ${backupName}`);
             }
             
             // Get exclude settings
@@ -1664,10 +1675,15 @@ export function createWebsiteServer() {
             const tempDir = `/tmp/2004scape-update-${Date.now()}`;
             const zipPath = `${tempDir}.zip`;
             
+            logToConsole(`Download URL: ${downloadUrl}`);
+            logToConsole(`Temp directory: ${tempDir}`);
+            
             // Create temp directory
             await execPromise(`mkdir -p ${tempDir}`);
+            logToConsole('Temp directory created');
             
             // Download the release
+            logToConsole('Starting download...');
             const file = fs.createWriteStream(zipPath);
             await new Promise((resolve, reject) => {
                 https.get(downloadUrl, {
@@ -1692,8 +1708,16 @@ export function createWebsiteServer() {
                             resolve();
                         });
                     }
-                }).on('error', reject);
+                }).on('error', (err) => {
+                    logToConsole(`Download error: ${err.message}`);
+                    reject(err);
+                });
+            }).catch(err => {
+                logToConsole(`Download failed: ${err.message}`);
+                throw err;
             });
+            
+            logToConsole('Download complete, extracting...');
             
             // Extract the downloaded file
             await execPromise(`unzip -q ${zipPath} -d ${tempDir}`);
@@ -1810,13 +1834,14 @@ export function createWebsiteServer() {
             }
             
             // Send success response before server might restart
-            res.json({ success: true, message: 'Update applied successfully. Server will restart automatically.' });
+            res.json({ success: true, message: 'Update applied successfully. Server will restart automatically.', console: global.updateConsoleOutput });
             
             // If using tsx watch, the server will auto-restart when files change
             // Otherwise, we could trigger a restart here
         } catch (err) {
+            logToConsole(`Update failed: ${err.message}`);
             console.error('Update failed:', err);
-            res.status(500).json({ error: 'Update failed: ' + err.message });
+            res.status(500).json({ error: 'Update failed: ' + err.message, console: global.updateConsoleOutput });
         }
     });
     

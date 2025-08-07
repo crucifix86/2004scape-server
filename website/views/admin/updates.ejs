@@ -284,6 +284,7 @@
             <div class="progress-bar" id="progressBar">
                 <div class="progress-fill" id="progressFill">0%</div>
             </div>
+            <div id="updateConsole" style="display: none; background: #000; color: #0f0; padding: 10px; margin-top: 10px; height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px; white-space: pre-wrap;"></div>
         </div>
         
         <!-- Update Settings -->
@@ -420,7 +421,10 @@
             
             const progressBar = document.getElementById('progressBar');
             const progressFill = document.getElementById('progressFill');
+            const updateConsole = document.getElementById('updateConsole');
             progressBar.style.display = 'block';
+            updateConsole.style.display = 'block';
+            updateConsole.innerHTML = 'Starting update...\n';
             
             try {
                 // Start update
@@ -432,8 +436,17 @@
                     })
                 });
                 
+                const data = await response.json();
+                
                 if (!response.ok) {
-                    throw new Error('Update failed');
+                    if (data.console) {
+                        updateConsole.innerHTML = data.console.join('\n');
+                    }
+                    throw new Error(data.error || 'Update failed');
+                }
+                
+                if (data.console) {
+                    updateConsole.innerHTML = data.console.join('\n');
                 }
                 
                 // Monitor progress
