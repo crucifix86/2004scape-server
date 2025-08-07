@@ -1972,11 +1972,12 @@ export function createWebsiteServer() {
                 const serverScript = path.join(process.cwd(), 'server');
                 console.log('Restarting server with script:', serverScript);
                 
-                // Use bash explicitly to ensure the script runs properly
-                const restart = spawn('/bin/bash', ['-c', `cd ${process.cwd()} && ./server restart`], {
+                // Use shell:true to run it like terminal would
+                const restart = spawn('./server restart', {
+                    shell: true,
                     detached: true,
                     stdio: 'ignore',
-                    env: {...process.env, PATH: '/usr/local/bin:/usr/bin:/bin'}
+                    cwd: process.cwd()
                 });
                 restart.unref(); // Allow parent to exit independently
             }, 100);
