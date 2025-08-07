@@ -1973,11 +1973,10 @@ export function createWebsiteServer() {
                 console.log('Restarting server with script:', serverScript);
                 
                 // Use bash explicitly to ensure the script runs properly
-                const restart = spawn('/bin/bash', [serverScript, 'restart'], {
+                const restart = spawn('/bin/bash', ['-c', `cd ${process.cwd()} && ./server restart`], {
                     detached: true,
                     stdio: 'ignore',
-                    cwd: process.cwd(),
-                    env: process.env
+                    env: {...process.env, PATH: '/usr/local/bin:/usr/bin:/bin'}
                 });
                 restart.unref(); // Allow parent to exit independently
             }, 100);
