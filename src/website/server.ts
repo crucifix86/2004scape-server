@@ -1439,7 +1439,7 @@ export function createWebsiteServer() {
             }
             
             // Check GitHub for latest release
-            const response = await fetch('https://api.github.com/repos/crucifix86/2004scape-server-new/releases/latest', {
+            const response = await fetch('https://api.github.com/repos/crucifix86/2004scape-server/releases/latest', {
                 headers: {
                     'User-Agent': '2004scape-server'
                 }
@@ -1479,14 +1479,17 @@ export function createWebsiteServer() {
         try {
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
             const backupName = `backup-${timestamp}.tar.gz`;
-            const backupPath = path.join('/home/crucifix', backupName);
+            const projectDir = process.cwd();
+            const parentDir = path.dirname(projectDir);
+            const projectName = path.basename(projectDir);
+            const backupPath = path.join(parentDir, backupName);
             
             // Create backup using tar
             const { exec } = require('child_process');
             const util = require('util');
             const execPromise = util.promisify(exec);
             
-            await execPromise(`cd /home/crucifix && tar --exclude='node_modules' --exclude='.git' --exclude='*.log' --exclude='*.pid' -czf ${backupName} 2004scape-server`);
+            await execPromise(`cd ${parentDir} && tar --exclude='node_modules' --exclude='.git' --exclude='*.log' --exclude='*.pid' -czf ${backupName} ${projectName}`);
             
             // Log the action (check if table exists first)
             try {
@@ -1519,11 +1522,12 @@ export function createWebsiteServer() {
         }
         
         try {
-            const files = fs.readdirSync('/home/crucifix');
+            const parentDir = path.dirname(process.cwd());
+            const files = fs.readdirSync(parentDir);
             const backups = files
                 .filter(f => (f.startsWith('backup-') || f.startsWith('pre-update-backup-') || f.startsWith('2004scape-backup-')) && f.endsWith('.tar.gz'))
                 .map(filename => {
-                    const stats = fs.statSync(path.join('/home/crucifix', filename));
+                    const stats = fs.statSync(path.join(parentDir, filename));
                     return {
                         filename,
                         size: (stats.size / 1024 / 1024).toFixed(2) + ' MB',
@@ -1552,7 +1556,7 @@ export function createWebsiteServer() {
             return res.status(400).send('Invalid backup filename');
         }
         
-        const filePath = path.join('/home/crucifix', filename);
+        const filePath = path.join(path.dirname(process.cwd()), filename);
         
         if (!fs.existsSync(filePath)) {
             return res.status(404).send('Backup not found');
@@ -1574,7 +1578,7 @@ export function createWebsiteServer() {
             return res.status(400).send('Invalid backup filename');
         }
         
-        const filePath = path.join('/home/crucifix', filename);
+        const filePath = path.join(path.dirname(process.cwd()), filename);
         
         if (!fs.existsSync(filePath)) {
             return res.status(404).send('Backup not found');
@@ -1626,8 +1630,11 @@ export function createWebsiteServer() {
             if (autoBackup) {
                 const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
                 const backupName = `pre-update-backup-${timestamp}.tar.gz`;
+                const projectDir = process.cwd();
+                const parentDir = path.dirname(projectDir);
+                const projectName = path.basename(projectDir);
                 
-                await execPromise(`cd /home/crucifix && tar --exclude='node_modules' --exclude='.git' --exclude='*.log' --exclude='*.pid' -czf ${backupName} 2004scape-server`);
+                await execPromise(`cd ${parentDir} && tar --exclude='node_modules' --exclude='.git' --exclude='*.log' --exclude='*.pid' -czf ${backupName} ${projectName}`);
             }
             
             // Get exclude settings
@@ -1653,7 +1660,7 @@ export function createWebsiteServer() {
             }
             
             // Download the update from GitHub
-            const downloadUrl = `https://api.github.com/repos/crucifix86/2004scape-server-new/zipball/v${version}`;
+            const downloadUrl = `https://api.github.com/repos/crucifix86/2004scape-server/zipball/v${version}`;
             const tempDir = `/tmp/2004scape-update-${Date.now()}`;
             const zipPath = `${tempDir}.zip`;
             

@@ -54,3 +54,8 @@ Date: August 7, 2025
 wget https://raw.githubusercontent.com/crucifix86/2004scape-server/main/install-vps.sh
 sudo bash install-vps.sh
 ```
+
+## Local Backups
+- Latest backup created: `/home/crucifix/2004scape-backup-20250807-101952.tar.gz`
+- This is our safety backup in case anything happens to the project
+- Previous backups also available from earlier sessions
