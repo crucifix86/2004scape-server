@@ -28,6 +28,16 @@ data/config/friend.json
 
 dump/
 
+# Log files
+*.log
+server.log
+login.log
+server_fresh.log
+error.log
+
+# Large asset directories
+newsprites/
+
 node_modules/
 
 # keep these precompiled files out of the repo
