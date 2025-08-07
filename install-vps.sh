@@ -175,7 +175,7 @@ echo ""
 echo "=== Starting Game Server with PM2 ==="
 
 # Create PM2 ecosystem file
-cat > ecosystem.config.js << 'EOF'
+cat > ecosystem.config.cjs << 'EOF'
 module.exports = {
   apps: [{
     name: '2004scape',
@@ -194,7 +194,7 @@ module.exports = {
 EOF
 
 # Start the game server with PM2
-pm2 start ecosystem.config.js
+pm2 start ecosystem.config.cjs
 
 # Save PM2 process list and set up startup
 pm2 save
