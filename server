@@ -7,68 +7,123 @@ case "$1" in
     start)
         echo "Starting 2004scape servers..."
         
-        # Kill any existing processes first
-        echo "Stopping any existing servers..."
-        pkill -f "tsx.*src/app.ts" 2>/dev/null
-        pkill -f "tsx.*src/login.ts" 2>/dev/null
-        sleep 2
-        
-        # Start the game server in the background
-        echo "Starting game server on port 8888..."
-        npm run dev > server_fresh.log 2>&1 &
-        GAME_PID=$!
-        echo "Game server started with PID: $GAME_PID"
-        
-        # Wait a moment for the game server to initialize
-        sleep 3
-        
-        # Start the login server with a different management port to avoid conflicts
-        echo "Starting login server on port 43500 (management port 8899)..."
-        WEB_MANAGEMENT_PORT=8899 npx tsx src/login.ts > login.log 2>&1 &
-        LOGIN_PID=$!
-        echo "Login server started with PID: $LOGIN_PID"
-        
-        # Create PID files
-        echo "$GAME_PID" > game_server.pid
-        echo "$LOGIN_PID" > login_server.pid
-        
-        echo ""
-        echo "Servers started successfully!"
-        echo "Game server: http://localhost:8888"
-        echo "Login server: Port 43500"
-        echo ""
-        echo "Logs:"
-        echo "  Game server: tail -f server_fresh.log"
-        echo "  Login server: tail -f login.log"
+        # Check if PM2 is available (VPS setup)
+        if command -v pm2 &> /dev/null; then
+            # VPS mode with PM2 and screen
+            echo "Starting in VPS mode..."
+            
+            # Start login server in screen
+            if screen -list | grep -q "login-server"; then
+                echo "Login server is already running"
+            else
+                echo "Starting login server..."
+                screen -dmS login-server npm run login
+                sleep 2
+                echo "Login server started in screen session"
+            fi
+            
+            # Start game server with PM2
+            if pm2 list | grep -q "2004scape.*online"; then
+                echo "Game server is already running"
+            else
+                echo "Starting game server..."
+                if [ -f ecosystem.config.cjs ]; then
+                    pm2 start ecosystem.config.cjs
+                else
+                    pm2 start npm --name "2004scape" -- run dev
+                fi
+                sleep 3
+                echo "Game server started with PM2"
+            fi
+            
+            echo ""
+            echo "Servers started successfully!"
+            echo "Access at: http://$(hostname -I | awk '{print $1}')"
+            echo ""
+            echo "Management:"
+            echo "  Game logs: pm2 logs 2004scape"
+            echo "  Login logs: screen -r login-server"
+        else
+            # Local development mode
+            echo "Starting in local development mode..."
+            
+            # Kill any existing processes first
+            echo "Stopping any existing servers..."
+            pkill -f "tsx.*src/app.ts" 2>/dev/null
+            pkill -f "tsx.*src/login.ts" 2>/dev/null
+            sleep 2
+            
+            # Start the game server in the background
+            echo "Starting game server on port 8888..."
+            npm run dev > server_fresh.log 2>&1 &
+            GAME_PID=$!
+            echo "Game server started with PID: $GAME_PID"
+            
+            # Wait a moment for the game server to initialize
+            sleep 3
+            
+            # Start the login server with a different management port to avoid conflicts
+            echo "Starting login server on port 43500 (management port 8899)..."
+            WEB_MANAGEMENT_PORT=8899 npx tsx src/login.ts > login.log 2>&1 &
+            LOGIN_PID=$!
+            echo "Login server started with PID: $LOGIN_PID"
+            
+            # Create PID files
+            echo "$GAME_PID" > game_server.pid
+            echo "$LOGIN_PID" > login_server.pid
+            
+            echo ""
+            echo "Servers started successfully!"
+            echo "Game server: http://localhost:8888"
+            echo "Login server: Port 43500"
+            echo ""
+            echo "Logs:"
+            echo "  Game server: tail -f server_fresh.log"
+            echo "  Login server: tail -f login.log"
+        fi
         ;;
         
     stop)
         echo "Stopping 2004scape servers..."
         
-        # Stop using PID files if they exist
-        if [ -f game_server.pid ]; then
-            GAME_PID=$(cat game_server.pid)
-            if kill -0 $GAME_PID 2>/dev/null; then
-                echo "Stopping game server (PID: $GAME_PID)..."
-                kill $GAME_PID
+        # Check if PM2 is available (VPS setup)
+        if command -v pm2 &> /dev/null; then
+            # VPS mode with PM2 and screen
+            echo "Stopping game server..."
+            pm2 stop 2004scape 2>/dev/null
+            pm2 delete 2004scape 2>/dev/null
+            
+            echo "Stopping login server..."
+            screen -X -S login-server quit 2>/dev/null
+            
+            echo "Servers stopped."
+        else
+            # Local development mode
+            # Stop using PID files if they exist
+            if [ -f game_server.pid ]; then
+                GAME_PID=$(cat game_server.pid)
+                if kill -0 $GAME_PID 2>/dev/null; then
+                    echo "Stopping game server (PID: $GAME_PID)..."
+                    kill $GAME_PID
+                fi
+                rm game_server.pid
             fi
-            rm game_server.pid
-        fi
-        
-        if [ -f login_server.pid ]; then
-            LOGIN_PID=$(cat login_server.pid)
-            if kill -0 $LOGIN_PID 2>/dev/null; then
-                echo "Stopping login server (PID: $LOGIN_PID)..."
-                kill $LOGIN_PID
+            
+            if [ -f login_server.pid ]; then
+                LOGIN_PID=$(cat login_server.pid)
+                if kill -0 $LOGIN_PID 2>/dev/null; then
+                    echo "Stopping login server (PID: $LOGIN_PID)..."
+                    kill $LOGIN_PID
+                fi
+                rm login_server.pid
             fi
-            rm login_server.pid
+            
+            # Also kill by process name as backup
+            pkill -f "tsx.*src/app.ts" 2>/dev/null
+            pkill -f "tsx.*src/login.ts" 2>/dev/null
+            
+            echo "Servers stopped."
         fi
-        
-        # Also kill by process name as backup
-        pkill -f "tsx.*src/app.ts" 2>/dev/null
-        pkill -f "tsx.*src/login.ts" 2>/dev/null
-        
-        echo "Servers stopped."
         ;;
         
     restart)
@@ -83,28 +138,65 @@ case "$1" in
         echo "2004scape Server Status:"
         echo ""
         
-        # Check game server
-        if [ -f game_server.pid ]; then
-            GAME_PID=$(cat game_server.pid)
-            if kill -0 $GAME_PID 2>/dev/null; then
-                echo "✓ Game server is running (PID: $GAME_PID)"
+        # Check if PM2 is available (VPS setup)
+        if command -v pm2 &> /dev/null; then
+            # VPS mode with PM2 and screen
+            # Check game server
+            if pm2 list | grep -q "2004scape.*online"; then
+                echo "✓ Game server is running (PM2)"
+                pm2 list | grep 2004scape
             else
-                echo "✗ Game server is not running (stale PID file)"
+                echo "✗ Game server is not running"
+            fi
+            
+            echo ""
+            
+            # Check login server
+            if screen -list | grep -q "login-server"; then
+                echo "✓ Login server is running (screen)"
+            else
+                echo "✗ Login server is not running"
+            fi
+            
+            echo ""
+            
+            # Check ports
+            echo "Port Status:"
+            if netstat -tuln | grep -q ":8888"; then
+                echo "  ✓ Port 8888 (Game) is open"
+            else
+                echo "  ✗ Port 8888 (Game) is closed"
+            fi
+            if netstat -tuln | grep -q ":43500"; then
+                echo "  ✓ Port 43500 (Login) is open"
+            else
+                echo "  ✗ Port 43500 (Login) is closed"
             fi
         else
-            echo "✗ Game server is not running"
-        fi
-        
-        # Check login server
-        if [ -f login_server.pid ]; then
-            LOGIN_PID=$(cat login_server.pid)
-            if kill -0 $LOGIN_PID 2>/dev/null; then
-                echo "✓ Login server is running (PID: $LOGIN_PID)"
+            # Local development mode
+            # Check game server
+            if [ -f game_server.pid ]; then
+                GAME_PID=$(cat game_server.pid)
+                if kill -0 $GAME_PID 2>/dev/null; then
+                    echo "✓ Game server is running (PID: $GAME_PID)"
+                else
+                    echo "✗ Game server is not running (stale PID file)"
+                fi
             else
-                echo "✗ Login server is not running (stale PID file)"
+                echo "✗ Game server is not running"
             fi
-        else
-            echo "✗ Login server is not running"
+            
+            # Check login server
+            if [ -f login_server.pid ]; then
+                LOGIN_PID=$(cat login_server.pid)
+                if kill -0 $LOGIN_PID 2>/dev/null; then
+                    echo "✓ Login server is running (PID: $LOGIN_PID)"
+                else
+                    echo "✗ Login server is not running (stale PID file)"
+                fi
+            else
+                echo "✗ Login server is not running"
+            fi
         fi
         ;;
         
