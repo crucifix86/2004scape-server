@@ -1972,9 +1972,8 @@ export function createWebsiteServer() {
                 const serverScript = path.join(process.cwd(), 'server');
                 console.log('Restarting server with script:', serverScript);
                 
-                // Use shell:true to run it like terminal would
-                const restart = spawn('./server restart', {
-                    shell: true,
+                // Use nohup to ensure the restart command survives when parent process dies
+                const restart = spawn('bash', ['-c', 'nohup ./server restart &'], {
                     detached: true,
                     stdio: 'ignore',
                     cwd: process.cwd()
