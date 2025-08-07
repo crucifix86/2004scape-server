@@ -1,0 +1,392 @@
+/* Mobile Responsive Styles for 2004Scape */
+
+/* Mobile Navigation */
+@media (max-width: 768px) {
+    /* Header adjustments */
+    .header {
+        position: fixed;
+        padding: 10px 0;
+    }
+    
+    .header-content {
+        padding: 10px 15px;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 100%;
+    }
+    
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .logo h1 {
+        font-size: 20px;
+        margin: 0;
+    }
+    
+    .logo img {
+        height: 35px;
+    }
+    
+    /* Mobile menu button */
+    .mobile-menu-btn {
+        display: block;
+        background: none;
+        border: none;
+        color: #ffd700;
+        font-size: 28px;
+        cursor: pointer;
+        padding: 5px;
+    }
+    
+    /* Navigation overlay */
+    .nav {
+        display: none;
+        position: fixed;
+        top: 60px;
+        left: 0;
+        right: 0;
+        background: #1a1a1a;
+        flex-direction: column;
+        padding: 20px;
+        gap: 15px;
+        border-bottom: 3px solid #ffd700;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.8);
+        z-index: 999;
+    }
+    
+    .nav.active {
+        display: flex;
+    }
+    
+    .nav a {
+        font-size: 18px;
+        padding: 10px;
+        text-align: center;
+        border-bottom: 1px solid #333;
+    }
+    
+    .nav a:last-child {
+        border-bottom: none;
+    }
+    
+    .play-button {
+        margin-top: 10px;
+    }
+    
+    /* Body padding adjustment */
+    body {
+        padding-top: 60px;
+    }
+    
+    /* Hero section */
+    .hero {
+        padding: 40px 15px;
+    }
+    
+    .hero h2 {
+        font-size: 28px;
+        line-height: 1.2;
+    }
+    
+    .hero p {
+        font-size: 16px;
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .hero-buttons a {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    /* Container adjustments */
+    .container {
+        margin: 20px auto;
+        padding: 0 15px;
+        max-width: 100%;
+    }
+    
+    /* Content grid - stack on mobile */
+    .content-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    /* Sidebar on mobile */
+    .sidebar {
+        order: 2; /* Move sidebar below main content */
+    }
+    
+    main {
+        order: 1;
+    }
+    
+    /* Cards and sections */
+    .card, .guide-section, .rule-section, .news-section {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .card h2, .guide-section h2, .rule-section h2 {
+        font-size: 22px;
+    }
+    
+    .card h3, .guide-section h3 {
+        font-size: 18px;
+    }
+    
+    /* Server stats on mobile */
+    .server-stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    
+    .stat-item {
+        padding: 10px 5px;
+    }
+    
+    .server-info .stat-value {
+        font-size: 18px;
+    }
+    
+    .server-info .stat-label {
+        font-size: 10px;
+    }
+    
+    /* Login form */
+    .login-form input {
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+    
+    /* User actions */
+    .user-actions a {
+        padding: 12px;
+        font-size: 14px;
+    }
+    
+    /* News items */
+    .news-item {
+        padding: 15px;
+    }
+    
+    .news-title {
+        font-size: 18px;
+    }
+    
+    .news-meta {
+        font-size: 12px;
+    }
+    
+    /* Features grid */
+    .features {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        margin: 30px 0;
+    }
+    
+    .feature-card {
+        padding: 20px;
+    }
+    
+    .feature-icon {
+        font-size: 36px;
+    }
+    
+    .feature-card h3 {
+        font-size: 20px;
+    }
+    
+    /* Tables */
+    .data-table, .skill-table {
+        font-size: 14px;
+    }
+    
+    .data-table th, .data-table td,
+    .skill-table th, .skill-table td {
+        padding: 8px 5px;
+    }
+    
+    /* Make tables scrollable on mobile */
+    .table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Forms */
+    .form-control {
+        font-size: 16px; /* Prevent zoom on iOS */
+        padding: 10px 15px;
+    }
+    
+    .btn {
+        width: 100%;
+        padding: 14px 20px;
+        font-size: 16px;
+    }
+    
+    /* Footer */
+    .footer {
+        padding: 30px 15px 20px;
+    }
+    
+    .footer-links {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    /* Page title */
+    .page-title {
+        padding: 40px 15px;
+    }
+    
+    .page-title h1 {
+        font-size: 32px;
+    }
+    
+    .page-title p {
+        font-size: 16px;
+    }
+    
+    /* Quick links */
+    .quick-links {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    /* Step boxes */
+    .step-box {
+        padding: 15px;
+    }
+    
+    /* Info boxes */
+    .tip-box, .info-box, .warning-box {
+        padding: 12px;
+        font-size: 14px;
+    }
+}
+
+/* Homepage specific mobile fixes */
+@media (max-width: 768px) {
+    /* Fix container width */
+    body > .container {
+        width: 100%;
+        padding: 0 10px;
+    }
+    
+    /* Fix news section alignment */
+    .news-section {
+        margin: 0;
+        border-radius: 0;
+        padding: 20px 15px;
+    }
+    
+    .news-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    /* Fix feature cards */
+    .features {
+        padding: 0;
+        margin: 20px 0;
+    }
+    
+    .feature-card {
+        margin: 0 0 15px 0;
+    }
+    
+    /* Fix server info card */
+    .card {
+        margin: 0 0 15px 0;
+    }
+    
+    /* Fix button alignment */
+    .btn, .hero-buttons a {
+        display: block;
+        width: 100%;
+        max-width: none;
+        text-align: center;
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+    .hero h2 {
+        font-size: 24px;
+    }
+    
+    .page-title h1 {
+        font-size: 28px;
+    }
+    
+    .card h2, .guide-section h2, .rule-section h2 {
+        font-size: 20px;
+    }
+    
+    /* Even smaller server stats */
+    .server-info .stat-value {
+        font-size: 16px;
+    }
+}
+
+/* Touch-friendly adjustments */
+@media (hover: none) and (pointer: coarse) {
+    /* Larger touch targets */
+    a, button, .btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Remove hover effects on touch devices */
+    .card:hover, .feature-card:hover, .quick-link:hover {
+        transform: none;
+        box-shadow: none;
+    }
+}
+
+/* Landscape mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .hero {
+        padding: 30px 15px;
+    }
+    
+    .hero h2 {
+        font-size: 24px;
+    }
+    
+    body {
+        padding-top: 50px;
+    }
+    
+    .header-content {
+        padding: 5px 15px;
+    }
+}
+
+/* Desktop menu button hidden by default */
+.mobile-menu-btn {
+    display: none;
+}
+
+/* Utility classes for mobile */
+.mobile-only {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .mobile-only {
+        display: block;
+    }
+    
+    .desktop-only {
+        display: none;
+    }
+}
