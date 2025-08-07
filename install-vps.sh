@@ -98,8 +98,8 @@ DEV_PASSWORD_HASH=$(node hash_password.cjs "$DEV_PASSWORD")
 # Clean up temporary script
 rm hash_password.cjs
 
-# Insert developer account
-sqlite3 db.sqlite "INSERT INTO account (username, password, staffmodlevel) VALUES ('$DEV_USERNAME', '$DEV_PASSWORD_HASH', 3);"
+# Insert developer account with full developer privileges (level 4)
+sqlite3 db.sqlite "INSERT INTO account (username, password, staffmodlevel) VALUES ('$DEV_USERNAME', '$DEV_PASSWORD_HASH', 4);"
 
 # Insert default settings
 sqlite3 db.sqlite "
