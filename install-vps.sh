@@ -147,6 +147,14 @@ a2ensite 2004scape
 systemctl restart apache2
 
 echo ""
+echo "=== Creating Environment Configuration ==="
+
+# Create .env file with build verification disabled
+cat > .env << 'EOF'
+BUILD_VERIFY=false
+EOF
+
+echo ""
 echo "=== Building Game Server ==="
 
 # Build the server
