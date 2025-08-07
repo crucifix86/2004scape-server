@@ -118,12 +118,19 @@ console.log('Fixes applied successfully!');
 "
 
 # Update package.json version
-echo "Updating version to 2.3.4..."
-sed -i 's/"version": ".*"/"version": "2.3.4"/' package.json
+echo "Downloading latest files..."
+# Download the latest server.ts and package.json
+wget -q -O src/website/server.ts.new https://raw.githubusercontent.com/crucifix86/2004scape-server/main/src/website/server.ts
+if [ $? -eq 0 ]; then
+    mv src/website/server.ts.new src/website/server.ts
+    echo "Updated server.ts"
+fi
 
-echo ""
-echo "Pulling latest changes from GitHub..."
-git pull origin main || echo "Note: Could not pull from git (may not be a git repository)"
+wget -q -O package.json.new https://raw.githubusercontent.com/crucifix86/2004scape-server/main/package.json
+if [ $? -eq 0 ]; then
+    mv package.json.new package.json
+    echo "Updated package.json to latest version"
+fi
 
 echo ""
 echo "Building the project..."
