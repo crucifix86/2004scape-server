@@ -118,8 +118,8 @@ console.log('Fixes applied successfully!');
 "
 
 # Update package.json version
-echo "Updating version to 2.3.2..."
-sed -i 's/"version": ".*"/"version": "2.3.2"/' package.json
+echo "Updating version to 2.3.4..."
+sed -i 's/"version": ".*"/"version": "2.3.4"/' package.json
 
 echo ""
 echo "=== Fixes Applied Successfully! ==="
