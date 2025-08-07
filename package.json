@@ -1,6 +1,6 @@
 {
   "name": "2004scape",
-  "version": "2.3.3",
+  "version": "2.3.4",
   "type": "module",
   "imports": {
     "#3rdparty/*": "./src/3rdparty/*",

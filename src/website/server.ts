@@ -1619,7 +1619,6 @@ export function createWebsiteServer() {
         const { exec, spawn } = require('child_process');
         const util = require('util');
         const execPromise = util.promisify(exec);
-        const https = require('https');
         
         try {
             const { version } = req.body;
@@ -1667,33 +1666,31 @@ export function createWebsiteServer() {
             // Create temp directory
             await execPromise(`mkdir -p ${tempDir}`);
             
-            // Download the release
-            const file = fs.createWriteStream(zipPath);
-            await new Promise((resolve, reject) => {
-                https.get(downloadUrl, {
-                    headers: {
-                        'User-Agent': '2004scape-server',
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                }, (response) => {
-                    if (response.statusCode === 302 || response.statusCode === 301) {
-                        // Follow redirect
-                        https.get(response.headers.location, (redirectResponse) => {
-                            redirectResponse.pipe(file);
-                            file.on('finish', () => {
-                                file.close();
-                                resolve();
-                            });
-                        }).on('error', reject);
-                    } else {
-                        response.pipe(file);
-                        file.on('finish', () => {
-                            file.close();
-                            resolve();
-                        });
-                    }
-                }).on('error', reject);
+            // Download the release using fetch
+            console.log('Downloading update from:', downloadUrl);
+            const downloadResponse = await fetch(downloadUrl, {
+                headers: {
+                    'User-Agent': '2004scape-server',
+                    'Accept': 'application/vnd.github.v3+json'
+                }
             });
+            
+            if (!downloadResponse.ok) {
+                throw new Error(`Failed to download update: ${downloadResponse.status} ${downloadResponse.statusText}`);
+            }
+            
+            // Get the actual download URL from the redirect
+            const actualDownloadUrl = downloadResponse.url;
+            console.log('Actual download URL:', actualDownloadUrl);
+            
+            // Download the actual file
+            const fileResponse = await fetch(actualDownloadUrl);
+            if (!fileResponse.ok) {
+                throw new Error(`Failed to download file: ${fileResponse.status} ${fileResponse.statusText}`);
+            }
+            
+            const buffer = await fileResponse.arrayBuffer();
+            fs.writeFileSync(zipPath, Buffer.from(buffer));
             
             // Extract the downloaded file
             await execPromise(`unzip -q ${zipPath} -d ${tempDir}`);
