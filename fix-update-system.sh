@@ -117,7 +117,7 @@ fs.writeFileSync('src/website/server.ts', content);
 console.log('Fixes applied successfully!');
 "
 
-# Update package.json version
+# Download latest files
 echo "Downloading latest files..."
 # Download the latest server.ts and package.json
 wget -q -O src/website/server.ts.new https://raw.githubusercontent.com/crucifix86/2004scape-server/main/src/website/server.ts
