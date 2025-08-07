@@ -1616,6 +1616,7 @@ export function createWebsiteServer() {
             return res.status(403).json({ error: 'Insufficient permissions' });
         }
         
+        
         const { exec, spawn } = require('child_process');
         const util = require('util');
         const execPromise = util.promisify(exec);
@@ -1682,40 +1683,23 @@ export function createWebsiteServer() {
             await execPromise(`mkdir -p ${tempDir}`);
             logToConsole('Temp directory created');
             
-            // Download the release
-            logToConsole('Starting download...');
-            const file = fs.createWriteStream(zipPath);
-            await new Promise((resolve, reject) => {
-                https.get(downloadUrl, {
-                    headers: {
-                        'User-Agent': '2004scape-server',
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                }, (response) => {
-                    if (response.statusCode === 302 || response.statusCode === 301) {
-                        // Follow redirect
-                        https.get(response.headers.location, (redirectResponse) => {
-                            redirectResponse.pipe(file);
-                            file.on('finish', () => {
-                                file.close();
-                                resolve();
-                            });
-                        }).on('error', reject);
-                    } else {
-                        response.pipe(file);
-                        file.on('finish', () => {
-                            file.close();
-                            resolve();
-                        });
-                    }
-                }).on('error', (err) => {
-                    logToConsole(`Download error: ${err.message}`);
-                    reject(err);
-                });
-            }).catch(err => {
-                logToConsole(`Download failed: ${err.message}`);
-                throw err;
-            });
+            // Download the release using wget (handles SSL better)
+            logToConsole('Starting download with wget...');
+            try {
+                // Use wget with no certificate check for test VPS
+                await execPromise(`wget -q --no-check-certificate -O ${zipPath} "${downloadUrl}"`);
+                logToConsole('Download complete');
+            } catch (wgetErr) {
+                logToConsole(`wget failed: ${wgetErr.message}, trying curl...`);
+                // Fallback to curl
+                try {
+                    await execPromise(`curl -L -k -o ${zipPath} "${downloadUrl}"`);
+                    logToConsole('Download complete with curl');
+                } catch (curlErr) {
+                    logToConsole(`curl also failed: ${curlErr.message}`);
+                    throw new Error('Failed to download update with both wget and curl');
+                }
+            }
             
             logToConsole('Download complete, extracting...');
             
