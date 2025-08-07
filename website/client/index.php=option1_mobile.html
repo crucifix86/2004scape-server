@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>BrainScape Mobile</title>
+<link rel="shortcut icon" href='../img/favicon.ico' />
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+        background: #000;
+        color: #fff;
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+        height: 100vh;
+        touch-action: none;
+    }
+    
+    .mobile-container {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        height: 100vh;
+        height: calc(var(--vh, 1vh) * 100);
+        width: 100vw;
+    }
+    
+    /* Header */
+    .mobile-header {
+        background: linear-gradient(to bottom, #2a2a2a, #1a1a1a);
+        padding: env(safe-area-inset-top) 15px 10px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #ffd700;
+        z-index: 100;
+    }
+    
+    .logo-section {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .logo-section img {
+        height: 24px;
+        width: 24px;
+    }
+    
+    .logo-section h1 {
+        font-size: 16px;
+        color: #ffd700;
+        font-weight: 600;
+    }
+    
+    .header-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .header-btn {
+        background: rgba(255, 215, 0, 0.15);
+        border: 1px solid rgba(255, 215, 0, 0.3);
+        color: #ffd700;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.2s;
+    }
+    
+    .header-btn:active {
+        background: rgba(255, 215, 0, 0.3);
+        transform: scale(0.95);
+    }
+    
+    /* Game Viewport */
+    .game-viewport-container {
+        position: relative;
+        background: #111;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    
+    .game-viewport {
+        position: relative;
+        width: 100%;
+        max-width: 800px;
+        background: #000;
+    }
+    
+    .game-iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        display: block;
+        background: #000;
+    }
+    
+    /* Touch Overlay */
+    .touch-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        z-index: 10;
+    }
+    
+    .touch-indicator {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        border: 2px solid rgba(255, 215, 0, 0.6);
+        border-radius: 50%;
+        background: rgba(255, 215, 0, 0.1);
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        animation: touchPulse 0.4s ease-out;
+    }
+    
+    @keyframes touchPulse {
+        to {
+            transform: translate(-50%, -50%) scale(1.5);
+            opacity: 0;
+        }
+    }
+    
+    /* Bottom Controls */
+    .bottom-controls {
+        background: linear-gradient(to top, #1a1a1a, #2a2a2a);
+        padding: 10px 15px env(safe-area-inset-bottom) 15px;
+        border-top: 1px solid #333;
+    }
+    
+    .control-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    
+    .control-btn {
+        background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
+        border: 1px solid #444;
+        color: #fff;
+        padding: 12px 8px;
+        border-radius: 10px;
+        font-size: 12px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.2s;
+        cursor: pointer;
+        min-height: 60px;
+        justify-content: center;
+    }
+    
+    .control-btn:active {
+        background: linear-gradient(135deg, #3a3a3a, #4a4a4a);
+        transform: scale(0.95);
+    }
+    
+    .control-btn.active {
+        background: linear-gradient(135deg, #ffd700, #ffed4e);
+        color: #1a1a1a;
+        border-color: #ffd700;
+    }
+    
+    .control-btn i {
+        font-size: 20px;
+    }
+    
+    .control-btn span {
+        font-size: 10px;
+        opacity: 0.8;
+    }
+    
+    /* Loading Screen */
+    .loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        gap: 20px;
+    }
+    
+    .loading-logo {
+        width: 80px;
+        height: 80px;
+        animation: logoSpin 2s ease-in-out infinite;
+    }
+    
+    @keyframes logoSpin {
+        0%, 100% { transform: rotate(0deg) scale(1); }
+        50% { transform: rotate(180deg) scale(0.8); }
+    }
+    
+    .loading-text {
+        color: #ffd700;
+        font-size: 18px;
+        font-weight: 600;
+    }
+    
+    .loading-progress {
+        width: 200px;
+        height: 4px;
+        background: #333;
+        border-radius: 2px;
+        overflow: hidden;
+    }
+    
+    .loading-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #ffd700, #ffed4e);
+        width: 0%;
+        transition: width 0.3s ease;
+        border-radius: 2px;
+    }
+    
+    /* Responsive adjustments */
+    @media screen and (max-width: 375px) {
+        .control-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        
+        .control-btn {
+            min-height: 50px;
+            padding: 8px 6px;
+        }
+    }
+    
+    @media screen and (min-height: 700px) {
+        .mobile-header {
+            padding-bottom: 15px;
+        }
+        
+        .bottom-controls {
+            padding-top: 15px;
+        }
+    }
+    
+    /* Safe area adjustments for newer iPhones */
+    @supports (padding: max(0px)) {
+        .mobile-header {
+            padding-top: max(15px, env(safe-area-inset-top));
+        }
+        
+        .bottom-controls {
+            padding-bottom: max(15px, env(safe-area-inset-bottom));
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="loading-screen" id="loadingScreen">
+    <img src="../img/favicon.ico" alt="Loading" class="loading-logo">
+    <div class="loading-text">Loading BrainScape</div>
+    <div class="loading-progress">
+        <div class="loading-progress-bar" id="loadingBar"></div>
+    </div>
+</div>
+
+<div class="mobile-container">
+    <header class="mobile-header">
+        <div class="logo-section">
+            <img src="../img/favicon.ico" alt="Logo">
+            <h1>BrainScape</h1>
+        </div>
+        <div class="header-actions">
+            <a href="../index.php" class="header-btn">
+                <span>🏠</span>
+                <span>Home</span>
+            </a>
+            <button class="header-btn" onclick="toggleFullscreen()">
+                <span>⛶</span>
+                <span>Full</span>
+            </button>
+        </div>
+    </header>
+    
+    <!-- MOBILE VERSION INDICATOR -->
+    <div style="background: #ff0066; color: white; text-align: center; padding: 5px; font-weight: bold; font-size: 14px;">
+        📱 MOBILE VERSION - Touch Optimized
+    </div>
+    
+    <div class="game-viewport-container">
+        <div class="game-viewport" id="gameViewport">
+            <iframe 
+                id="gameFrame" 
+                class="game-iframe"
+                src="/rs2.cgi?lowmem=1&plugin=0"
+                allow="autoplay; fullscreen"
+            ></iframe>
+            <div class="touch-overlay" id="touchOverlay"></div>
+        </div>
+    </div>
+    
+    <div class="bottom-controls">
+        <div class="control-grid">
+            <button class="control-btn" onclick="toggleInventory()">
+                <i>🎒</i>
+                <span>Inventory</span>
+            </button>
+            <button class="control-btn" onclick="toggleMap()">
+                <i>🗺️</i>
+                <span>Map</span>
+            </button>
+            <button class="control-btn" onclick="toggleChat()">
+                <i>💬</i>
+                <span>Chat</span>
+            </button>
+            <button class="control-btn" onclick="toggleSettings()">
+                <i>⚙️</i>
+                <span>Settings</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Set viewport height properly for mobile browsers
+function setViewportHeight() {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+
+setViewportHeight();
+window.addEventListener('resize', setViewportHeight);
+window.addEventListener('orientationchange', setViewportHeight);
+
+// Loading simulation
+let loadingProgress = 0;
+const loadingBar = document.getElementById('loadingBar');
+const loadingScreen = document.getElementById('loadingScreen');
+
+const loadingInterval = setInterval(() => {
+    loadingProgress += Math.random() * 15;
+    if (loadingProgress >= 100) {
+        loadingProgress = 100;
+        clearInterval(loadingInterval);
+        setTimeout(() => {
+            loadingScreen.style.display = 'none';
+        }, 500);
+    }
+    loadingBar.style.width = loadingProgress + '%';
+}, 200);
+
+// Dynamic viewport sizing
+function resizeGameViewport() {
+    const container = document.querySelector('.game-viewport-container');
+    const viewport = document.getElementById('gameViewport');
+    const containerHeight = container.offsetHeight;
+    const containerWidth = container.offsetWidth;
+    
+    // Calculate optimal size maintaining aspect ratio
+    const gameAspectRatio = 800 / 600; // 4:3
+    let width = containerWidth;
+    let height = width / gameAspectRatio;
+    
+    if (height > containerHeight) {
+        height = containerHeight;
+        width = height * gameAspectRatio;
+    }
+    
+    viewport.style.width = width + 'px';
+    viewport.style.height = height + 'px';
+}
+
+window.addEventListener('load', resizeGameViewport);
+window.addEventListener('resize', resizeGameViewport);
+window.addEventListener('orientationchange', () => {
+    setTimeout(resizeGameViewport, 100);
+});
+
+// Touch feedback
+const touchOverlay = document.getElementById('touchOverlay');
+const gameFrame = document.getElementById('gameFrame');
+
+function showTouchFeedback(x, y) {
+    const indicator = document.createElement('div');
+    indicator.className = 'touch-indicator';
+    indicator.style.left = x + 'px';
+    indicator.style.top = y + 'px';
+    touchOverlay.appendChild(indicator);
+    
+    setTimeout(() => {
+        indicator.remove();
+    }, 400);
+}
+
+gameFrame.addEventListener('load', () => {
+    // Forward touch events with visual feedback
+    const frameDoc = gameFrame.contentDocument || gameFrame.contentWindow.document;
+    
+    frameDoc.addEventListener('touchstart', (e) => {
+        const touch = e.touches[0];
+        const rect = gameFrame.getBoundingClientRect();
+        showTouchFeedback(touch.clientX - rect.left, touch.clientY - rect.top);
+    });
+});
+
+// Control functions
+function toggleInventory() {
+    console.log('Toggle inventory');
+    // Send message to game iframe
+}
+
+function toggleMap() {
+    console.log('Toggle map');
+    // Send message to game iframe
+}
+
+function toggleChat() {
+    console.log('Toggle chat');
+    // Send message to game iframe
+}
+
+function toggleSettings() {
+    console.log('Toggle settings');
+    // Send message to game iframe
+}
+
+function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+            console.log('Fullscreen error:', err);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+// Prevent pull-to-refresh
+let lastTouchY = 0;
+let preventPullToRefresh = false;
+
+document.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    lastTouchY = e.touches[0].clientY;
+    preventPullToRefresh = window.pageYOffset === 0;
+});
+
+document.addEventListener('touchmove', (e) => {
+    const touchY = e.touches[0].clientY;
+    const touchYDelta = touchY - lastTouchY;
+    lastTouchY = touchY;
+    
+    if (preventPullToRefresh && touchYDelta > 0) {
+        e.preventDefault();
+    }
+}, { passive: false });
+</script>
+
+</body>
+</html>

@@ -395,7 +395,7 @@ if ($db) {
                 <a href="#news">News</a>
                 <a href="hiscores.php">Hiscores</a>
                 <a href="ex/rules.php">Rules</a>
-                <a href="client/index.php=option1.php" class="play-button">Play Now</a>
+                <a href="/client/play" class="play-button">Play Now</a>
             </nav>
         </div>
     </header>

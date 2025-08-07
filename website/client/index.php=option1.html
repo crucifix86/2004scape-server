@@ -1,13 +1,3 @@
-<?php
-// Mobile detection
-$userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-$isMobile = preg_match('/(android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini)/i', $userAgent);
-
-if ($isMobile) {
-    header('Location: index.php=option1_mobile.php');
-    exit();
-}
-?>
 <!DOCTYPE html>
 <html>
 
@@ -22,13 +12,29 @@ if ($isMobile) {
 <link rel="shortcut icon" href='../img/favicon.ico' />
 <link href="../css/basic-3.css" rel="stylesheet" type="text/css" media="all">
 <link href="../client/succes.css" rel="stylesheet" type="text/css"/>
+<script>
+// Mobile detection and redirect with debugging
+(function() {
+    var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    var isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
+    
+    // Debug output
+    console.log('User Agent:', userAgent);
+    console.log('Is Mobile:', isMobile);
+    
+    if (isMobile) {
+        console.log('Redirecting to mobile version...');
+        window.location.replace('index.php=option1_mobile.html');
+    }
+})();
+</script>
 </head>
 <body>
 
 <div id="body">
 <div style="text-align: center; background: none;">
 <div class="titleframe e">
-<b>BrainScape - Option #1 - Webclient (DESKTOP VERSION)</b><br>
+<b>BrainScape - Option #1 - Webclient</b><br>
 <a href="../index.php">Home</a> - <a href="../forums">Forums</a> - <a href="../vote.php">Vote4Cash</a> - <a href="../#">Donate</a>
 </div>
 </div>
@@ -47,7 +53,7 @@ if ($isMobile) {
     </div>
 </div>
 </center><br>
-<center><iframe id="gameFrame" src="http://localhost:8080/rs2.cgi?lowmem=0&plugin=0" width="800" height="600" style="border: 2px solid #333;" allowfullscreen></iframe></center>
+<center><iframe id="gameFrame" src="/rs2.cgi?lowmem=0&plugin=0" width="800" height="600" style="border: 2px solid #333;" allowfullscreen></iframe></center>
 </div>
 <br>
 <div class="tandc">Copyright &copy; 2012 BrainScape - All Rights Reserve<br>

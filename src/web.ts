@@ -110,6 +110,10 @@ export const web = http.createServer(async (req, res) => {
 
             const username = url.searchParams.get('username') || '';
             
+            // Mobile detection
+            const userAgent = req.headers['user-agent'] || '';
+            const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
+            
             const context = {
                 plugin,
                 nodeid: Environment.NODE_ID,
@@ -117,7 +121,8 @@ export const web = http.createServer(async (req, res) => {
                 members: Environment.NODE_MEMBERS,
                 portoff: Environment.NODE_PORT - 43594,
                 per_deployment_token: '',
-                username
+                username,
+                isMobile
             };
             if (Environment.WEB_SOCKET_TOKEN_PROTECTION) {
                 context.per_deployment_token = getPublicPerDeploymentToken();
@@ -125,6 +130,8 @@ export const web = http.createServer(async (req, res) => {
 
             if (Environment.NODE_DEBUG && plugin == 1) {
                 res.end(await ejs.renderFile('view/java.ejs', context));
+            } else if (isMobile) {
+                res.end(await ejs.renderFile('view/client-mobile.ejs', context));
             } else {
                 res.end(await ejs.renderFile('view/client.ejs', context));
             }

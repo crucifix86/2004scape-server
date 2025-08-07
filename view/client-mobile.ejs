@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>2004Scape Mobile</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html {
+            touch-action: manipulation;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100vh;
+            touch-action: none;
+        }
+        
+        .mobile-container {
+            height: 100vh;
+            height: calc(var(--vh, 1vh) * 100);
+            width: 100vw;
+            position: relative;
+        }
+        
+        /* Mobile Header */
+        .mobile-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(42, 42, 42, 0.8);
+            padding: env(safe-area-inset-top) 10px 8px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logo-section h1 {
+            font-size: 14px;
+            color: #ffd700;
+            font-weight: 600;
+        }
+        
+        .header-btn {
+            background: rgba(255, 215, 0, 0.15);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            color: #ffd700;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        /* Game Viewport */
+        .game-viewport-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding-top: 60px; /* Account for header */
+        }
+        
+        #game {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            outline: none;
+            -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+        }
+        
+        /* Portrait mode specific styling */
+        @media screen and (orientation: portrait) {
+            canvas {
+                width: 100%;
+                height: auto;
+                object-fit: contain;
+            }
+            
+            .game-viewport-container {
+                padding: 60px 0 0 0;
+            }
+        }
+        
+        /* Landscape mode specific styling */
+        @media screen and (orientation: landscape) {
+            canvas {
+                width: auto;
+                height: 100%;
+                object-fit: contain;
+            }
+        }
+        
+        /* Loading Screen */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .loading-text {
+            color: #ffd700;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        
+        .loading-progress {
+            width: 200px;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .loading-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ffed4e);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        
+        /* Safe area adjustments */
+        @supports (padding: max(0px)) {
+            .mobile-header {
+                padding-top: max(10px, env(safe-area-inset-top));
+            }
+        }
+        
+        /* Landscape adjustments */
+        @media screen and (orientation: landscape) {
+            .mobile-header {
+                padding: 5px 15px;
+            }
+            
+            .logo-section h1 {
+                font-size: 14px;
+            }
+            
+            .mobile-controls {
+                padding: 5px 15px;
+            }
+            
+            .control-btn {
+                padding: 8px 12px;
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <div class="loading-text">Loading 2004Scape Mobile...</div>
+        <div class="loading-progress">
+            <div class="loading-progress-bar" id="loadingBar"></div>
+        </div>
+    </div>
+    
+    <div class="mobile-container">
+        <header class="mobile-header">
+            <div class="logo-section">
+                <h1>⚔️ 2004Scape Mobile</h1>
+            </div>
+            <button class="header-btn" onclick="toggleFullscreen()">⛶ Full</button>
+        </header>
+        
+        <div class="game-viewport-container">
+            <main id="game"></main>
+        </div>
+        
+    </div>
+    
+
+    <script type="module">
+        // Set viewport height properly for mobile browsers
+        function setViewportHeight() {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        
+        setViewportHeight();
+        window.addEventListener('resize', setViewportHeight);
+        window.addEventListener('orientationchange', setViewportHeight);
+        
+        
+        
+        
+        window.toggleFullscreen = function() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log('Fullscreen error:', err);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        
+        // Prevent pull-to-refresh
+        let lastTouchY = 0;
+        let preventPullToRefresh = false;
+        
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length !== 1) return;
+            lastTouchY = e.touches[0].clientY;
+            preventPullToRefresh = window.pageYOffset === 0;
+        });
+        
+        document.addEventListener('touchmove', (e) => {
+            const touchY = e.touches[0].clientY;
+            const touchYDelta = touchY - lastTouchY;
+            lastTouchY = touchY;
+            
+            if (preventPullToRefresh && touchYDelta > 0) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    </script>
+
+    <script>
+        // Create canvas with fixed internal dimensions
+        const canvas = document.createElement('canvas');
+        canvas.id = 'canvas';
+        canvas.width = 765;
+        canvas.height = 503;
+        document.getElementById('game').appendChild(canvas);
+        
+        // Loading progress
+        let progress = 0;
+        const loadingBar = document.getElementById('loadingBar');
+        const loadingInterval = setInterval(() => {
+            progress += Math.random() * 20;
+            if (progress >= 90) {
+                clearInterval(loadingInterval);
+            }
+            loadingBar.style.width = Math.min(progress, 90) + '%';
+        }, 200);
+    </script>
+    
+    <script type="module">
+        import { Client } from './client/client.js';
+        
+        <% if (per_deployment_token) { %>
+            document.cookie = 'per_deployment_token="<%= per_deployment_token %>"; Domain=' + window.location.hostname;
+        <% } %>
+        
+        <% if (username) { %>
+            localStorage.setItem('savedUsername', '<%= username %>');
+        <% } %>
+        
+        // Initialize the game client
+        window.client = new Client(<%= nodeid %>, <%= lowmem %>, <%= members %>);
+        
+        // Hide loading screen when client is ready
+        setTimeout(() => {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('loadingBar').style.width = '100%';
+        }, 2000);
+    </script>
+</body>
+</html>

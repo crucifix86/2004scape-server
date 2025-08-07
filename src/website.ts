@@ -13,6 +13,7 @@ export function createWebsite() {
     app.use('/css', express.static(path.join(__dirname, '../website/css')));
     app.use('/img', express.static(path.join(__dirname, '../website/img')));
     app.use('/downloads', express.static(path.join(__dirname, '../website/downloads')));
+    app.use('/client', express.static(path.join(__dirname, '../website/client')));
     
     // Set view engine to EJS
     app.set('view engine', 'ejs');
@@ -54,6 +55,18 @@ export function createWebsite() {
     // Play page - redirect to game
     app.get('/play', (req, res) => {
         res.redirect('/rs2.cgi?lowmem=0&plugin=0');
+    });
+
+    // Game client route with mobile detection
+    app.get('/client/play', (req, res) => {
+        const userAgent = req.headers['user-agent'] || '';
+        const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+        
+        if (isMobile) {
+            res.redirect('/client/index.php=option1_mobile.html');
+        } else {
+            res.redirect('/client/index.php=option1.php');
+        }
     });
 
     // Hiscores page
