@@ -46,6 +46,8 @@ apt-get install -y \
     sqlite3 \
     python3 \
     screen \
+    unzip \
+    rsync \
     openjdk-17-jre-headless
 
 # Install Node.js 20

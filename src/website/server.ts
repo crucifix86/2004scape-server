@@ -1740,7 +1740,9 @@ export function createWebsiteServer() {
             }
             
             // Apply the update using rsync WITHOUT --delete to prevent data loss
-            const rsyncCommand = `rsync -a ${excludeParams.join(' ')} ${extractedDir}/ /home/crucifix/2004scape-server/`;
+            const targetDir = process.cwd();
+            const rsyncCommand = `rsync -a ${excludeParams.join(' ')} ${extractedDir}/ ${targetDir}/`;
+            logToConsole(`Applying update to: ${targetDir}`);
             
             // Use spawn instead of exec to handle large outputs
             const rsyncProcess = spawn('rsync', [
@@ -1748,7 +1750,7 @@ export function createWebsiteServer() {
                 // '--delete' REMOVED to prevent accidental data deletion
                 ...excludeParams,
                 `${extractedDir}/`,
-                '/home/crucifix/2004scape-server/'
+                `${targetDir}/`
             ]);
             
             let rsyncOutput = '';
