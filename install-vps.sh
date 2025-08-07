@@ -67,7 +67,16 @@ echo ""
 echo "=== Installing Node Dependencies ==="
 
 # Install npm packages
-npm install
+if ! npm install; then
+    echo "Error: npm install failed"
+    exit 1
+fi
+
+# Verify tsx is installed
+if ! npx tsx --version > /dev/null 2>&1; then
+    echo "Error: tsx not installed properly"
+    exit 1
+fi
 
 echo ""
 echo "=== Setting Up Database ==="
@@ -174,13 +183,13 @@ sleep 5
 echo ""
 echo "=== Starting Game Server with PM2 ==="
 
-# Create PM2 ecosystem file
+# Create PM2 ecosystem file for dev mode
 cat > ecosystem.config.cjs << 'EOF'
 module.exports = {
   apps: [{
     name: '2004scape',
     script: 'npm',
-    args: 'run start',
+    args: 'run dev',
     cwd: '/opt/2004scape-server',
     instances: 1,
     autorestart: true,
@@ -223,6 +232,36 @@ else
 fi
 
 echo ""
+echo "=== Waiting for services to start ==="
+sleep 10
+
+echo ""
+echo "=== Verifying Installation ==="
+
+# Check if Node.js server is running on port 8888
+if netstat -tuln | grep -q ":8888"; then
+    echo "✓ Game server is listening on port 8888"
+else
+    echo "✗ Game server is NOT listening on port 8888"
+    echo "  Check logs with: pm2 logs 2004scape"
+fi
+
+# Test the backend directly
+echo ""
+echo "Testing backend server..."
+if curl -s -o /dev/null -w "%{http_code}" http://localhost:8888 | grep -q "200"; then
+    echo "✓ Backend server responds correctly"
+else
+    echo "✗ Backend server not responding"
+    echo "  HTTP Status: $(curl -s -o /dev/null -w "%{http_code}" http://localhost:8888)"
+fi
+
+# Check Apache error log
+echo ""
+echo "Recent Apache errors:"
+tail -5 /var/log/apache2/2004scape-error.log 2>/dev/null || echo "No errors found"
+
+echo ""
 echo "============================================"
 echo "       Installation Complete!"
 echo "============================================"
@@ -230,10 +269,14 @@ echo ""
 echo "Server URL: http://$(hostname -I | awk '{print $1}')"
 echo "Developer account: $DEV_USERNAME"
 echo ""
-echo "Management commands:"
+echo "Troubleshooting commands:"
+echo "  Game server status: pm2 status"
 echo "  Game server logs: pm2 logs 2004scape"
 echo "  Login server logs: screen -r login-server"
+echo "  Apache errors: tail -f /var/log/apache2/2004scape-error.log"
+echo "  Check ports: netstat -tuln | grep -E '8888|80|43500'"
 echo "  Restart game: pm2 restart 2004scape"
-echo "  Stop all: pm2 stop all && screen -X -S login-server quit"
+echo "  Restart all: pm2 restart all && systemctl restart apache2"
 echo ""
-echo "The server should now be accessible on port 80!"
+echo "If you see 503 errors, the game server may still be starting up."
+echo "Wait a minute and refresh the page."
