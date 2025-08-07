@@ -124,6 +124,14 @@ wget -q -O src/website/server.ts.new https://raw.githubusercontent.com/crucifix8
 if [ $? -eq 0 ]; then
     mv src/website/server.ts.new src/website/server.ts
     echo "Updated server.ts"
+    
+    # Also update the server management script for better restart handling
+    wget -q -O server.new https://raw.githubusercontent.com/crucifix86/2004scape-server/main/server
+    if [ $? -eq 0 ]; then
+        mv server.new server
+        chmod +x server
+        echo "Updated server management script"
+    fi
 fi
 
 wget -q -O package.json.new https://raw.githubusercontent.com/crucifix86/2004scape-server/main/package.json
